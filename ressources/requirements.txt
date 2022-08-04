@@ -1,0 +1,7 @@
+matplotlib
+numpy
+gspread
+datetime
+statistics
+pandas
+gitpython
