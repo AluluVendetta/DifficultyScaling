@@ -23,12 +23,14 @@ jobs:
         with:
           python-version: '3.9'
           cache: 'pip' # caching pip dependencies
+      
       - run: pip install -r .github/workflows/requirements.txt
+      
       - name: Run a Python script
+      
       - run: python .github/workflows/example.py
-      - uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          branch: proto-difficulty-scaling
+      
+
 
         
 
