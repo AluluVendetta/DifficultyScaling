@@ -509,7 +509,7 @@ def normalizing(y):
 def copytocsv(y, name):
     # #print(y[0])
 
-    with open(".github/workflows/"+name + ".csv", "w", newline="") as g:
+    with open(""+name + ".csv", "w", newline="") as g:
         writer = csv.writer(g)
         writer.writerow(dataframenames)
         writer.writerows(y)
