@@ -59,11 +59,11 @@ gameNames = ["VegeBaston", "PotesAuFeu", "Synglab", "Riversplash", "LianeFolie",
 # load sequences and songs
 sequences = []
 for i in range(8):
-    y = open('.github/workflows/'+gameNames[i] + "Sequences.json")
+    y = open('ressources/'+gameNames[i] + "Sequences.json")
     y = json.load(y)
     sequences += [y['sequences']]
 
-songs = json.load(open('.github/workflows/MilaSongs.json'))
+songs = json.load(open('ressources/MilaSongs.json'))
 
 # penalty of error
 err_thresh = 0.4;
@@ -462,7 +462,7 @@ def result(difficulty, result):
 # read a dataset as list of lists
 def readaslist(name):
     # read csv file as a list of lists
-    with open('.github/workflows/'+name + '.csv', 'r') as read_obj:
+    with open('ressources/'+name + '.csv', 'r') as read_obj:
         # pass the file object to reader() to get the reader object
         csv_reader = reader(read_obj)
         # Pass reader object to list() to get a list of lists
@@ -509,7 +509,7 @@ def normalizing(y):
 def copytocsv(y, name):
     # #print(y[0])
 
-    with open(""+name + ".csv", "w", newline="") as g:
+    with open("ressources/"+name + ".csv", "w", newline="") as g:
         writer = csv.writer(g)
         writer.writerow(dataframenames)
         writer.writerows(y)
@@ -542,8 +542,8 @@ def createbasecloud():
 
 # read 2 copies of the patients dataset ( normalized)
 # read an unnormalized version of the patients dataset
-unnormalized = pd.read_csv('.github/workflows/Unnormalized.csv')
-patients = pd.read_csv('.github/workflows/Patients.csv')
+unnormalized = pd.read_csv('ressources/Unnormalized.csv')
+patients = pd.read_csv('ressources/Patients.csv')
 # read the patients' data + the synthetic ones
 
 
@@ -682,7 +682,7 @@ def SMOTE(SyntSamples=15000):
     maxis= [0]*8
     minis = [1000]*8
     avgscore=[0]*8
-    pdf = pd.read_csv('.github/workflows/Patients.csv')
+    pdf = pd.read_csv('ressources/Patients.csv')
     # rread = readaslist("Unnormalized")
     rread = readaslist("Patients")
 
@@ -737,7 +737,7 @@ def play_test():
     global oldtype
     global lastdiffs
     global typediff
-    pdf = pd.read_csv('.github/workflows/NSynthetic.csv')
+    pdf = pd.read_csv('ressources/NSynthetic.csv')
     print("Virtual Player Testing .. ")
     gameId = 15
     for gameId in order:
@@ -820,7 +820,7 @@ def play_test():
             plt.plot(scores)
             plt.plot(difficulties)
             plt.plot(diffs)
-            plt.savefig("Game " + gameNames[gameId_order[gameId]]+ ".jpg")
+            plt.savefig("ressources/Game " + gameNames[gameId_order[gameId]]+ ".jpg")
             plt.close()
 
 
