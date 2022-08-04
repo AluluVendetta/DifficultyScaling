@@ -24,3 +24,6 @@ jobs:
           cache: 'pip' # caching pip dependencies
       - run: pip install -r .github/workflows/requirements.txt
       - run: python .github/workflows/example.py
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          branch: proto-difficulty-scaling
