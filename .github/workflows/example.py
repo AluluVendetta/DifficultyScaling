@@ -718,7 +718,7 @@ def SMOTE(SyntSamples=15000):
     copytocsv(normalizing(rread), "NSynthetic")
 
 
-SMOTE(0)
+SMOTE(10000)
 
 
 # #print(next([0.819009, 0.822712, 0.875080,
@@ -764,7 +764,7 @@ def play_test():
             for i in range(8):
                 durations[i] = 0
                 advancements[i] = 0
-            for i in range(1):
+            for i in range(200):
                 print("level ", i)
                 oldtype = typediff
                 difficulty = difficultycurve2(levels,gameId)
