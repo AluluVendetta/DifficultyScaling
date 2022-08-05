@@ -15,6 +15,15 @@ import sys
 import re, urllib
 import os
 
+def readpatientsdata():
+
+    with open('ressources/Datas.json', 'w') as outfile:
+        filenames = os.listdir('ressources/splitted')
+        for fname in filenames:
+            with open(fname) as infile:
+                outfile.write(infile.read())
+
+readpatientsdata()
 
 alpha = 0.5
 
@@ -538,7 +547,7 @@ def createbasecloud():
 
 
 # used once
-#createbasecloud()
+createbasecloud()
 
 # read 2 copies of the patients dataset ( normalized)
 # read an unnormalized version of the patients dataset
