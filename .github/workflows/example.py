@@ -20,6 +20,7 @@ def readpatientsdata():
     with open('ressources/Datas.json', 'w') as outfile:
         filenames = os.listdir('ressources/splitted')
         for fname in filenames:
+            
             with open(fname) as infile:
                 outfile.write(infile.read())
 
