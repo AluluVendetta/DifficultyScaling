@@ -278,12 +278,11 @@ def difficulty_to_parametres(difficulty, song, gameId=12):
 
 
 def weightofscoreinday(chunk, n):
-    # if float(chunk+1) / n <= barriers or float(chunk+1) / n >= (1 - barriers):
-    #    return min_consideration
+    if float(chunk+1) / n <= barriers or float(chunk+1) / n >= (1 - barriers):
+       return min_consideration
     return 1
 
 
-start = 0.2
 
 
 # Core Function : take a player profile, the history of his games and gives back a new profile
@@ -301,15 +300,15 @@ def updateprofile(gameId, player):
         for chunk in range(len(history[day])):
             dayselapsed += 1
             w = (start + (1 - start) * ((day + 1) / len(history)) ** 0.5) * weightofscoreinday(chunk, len(history[day]))
-            val = (w * history[day][chunk][1])
-            modifyweights(history[day][chunk][1], history[day][chunk][2])
+            val = (w * history[day][chunk][1]*history[day][chunk][3]/player_max_level_index)
+            modifyweights(history[day][chunk][3], history[day][chunk][2])
             for weight in range(len(weights[0])):
                 divisor[weight] += w * weights[gameId_order[history[day][chunk][2]]][weight]
                 profile[weight] += val * weights[gameId_order[history[day][chunk][2]]][weight]
     for weight in range(len(weights[0])):
         if profile[weight] != 0:
             profile[weight] /= divisor[weight]
-            profile[weight] *= float(dayselapsed) / (player_max_level_index*8)
+
     return [profile, history]
 
 
@@ -353,7 +352,7 @@ def score_player(playerId):
     once_adv = []
 
     if (len(zipped) > 0):
-        # #print(playerId)
+        # print(playerId)
         zipped = sorted(zipped, key=lambda x: x[0])
         for x in zipped:
             if (x[2] != None and not ((x[1], x[2], x[3]) in once)):
@@ -365,27 +364,25 @@ def score_player(playerId):
         player = [[0] * (len(weights[0]) + 4), []]
         j =0
         for d in zipped:
-
-            if (len(player[1]) < 1):
-                player[1] = [[[d[0], d[5], d[7], d[4]]]]
-            else:
-                if (compareday(player[1][-1][0][0], d[0])):
-                    player[1][-1] += [[d[0], d[5], d[7], d[4]]]
+            if(d[7] in order):
+                if (len(player[1]) < 1):
+                    player[1] = [[[d[0], d[5], d[7], d[4]]]]
                 else:
-                    player[1].append([[d[0], d[5], d[7], d[4]]])
+                    if (compareday(player[1][-1][0][0], d[0])):
+                        player[1][-1] += [[d[0], d[5], d[7], d[4]]]
+                    else:
+                        player[1].append([[d[0], d[5], d[7], d[4]]])
 
-            player[0][5] = durations[gameId_order[d[7]]]
-            player[0][6] = sum(durations)
-            player[0][7] = advancements[gameId_order[d[7]]]
-            player[0][8] = sum(advancements)
-            if (j > skips):
-                addtocloud(d[4], player[0], d[5], playerId, d[7], d[6],
-                           d[8])
-            j+=1
-            advancements[gameId_order[d[7]]] += 1
-            durations[gameId_order[d[7]]] += d[6]
+                player[0][5] = durations[gameId_order[d[7]]]
+                player[0][6] = sum(durations)
+                player[0][7] = advancements[gameId_order[d[7]]]
+                player[0][8] = sum(advancements)
+                addtocloud(d[4], player[0], d[5], playerId, d[7], d[6],d[8])
+                j+=1
+                advancements[gameId_order[d[7]]] += 1
+                durations[gameId_order[d[7]]] += d[6]
 
-            player = updateprofile(d[7], player)
+                player = updateprofile(d[7], player)
 
 
 # returns a score of a round
@@ -430,7 +427,7 @@ def score_chunk(round):
     return score
 
 
-#f.close()
+f.close()
 
 
 # bell shaped function used for calculating scores
@@ -472,7 +469,7 @@ def result(difficulty, result):
 # read a dataset as list of lists
 def readaslist(name):
     # read csv file as a list of lists
-    with open('ressources/'+name + '.csv', 'r') as read_obj:
+    with open(name + '.csv', 'r') as read_obj:
         # pass the file object to reader() to get the reader object
         csv_reader = reader(read_obj)
         # Pass reader object to list() to get a list of lists
@@ -497,27 +494,31 @@ def normalizing(y):
         minis[gameId_order[int(y[i][11])]] = min([minis[gameId_order[int(y[i][11])]], float(y[i][9])])
         avgscore[gameId_order[int(y[i][11])]]+=float(y[i][9])
         gamelengths[gameId_order[int(y[i][11])]]+=1
+    print("Average Game Scores not normalized ", [avgscore[i]/float(gamelengths[i]) for i in range(8)])
+
     avgscore=[(avgscore[i]/float(gamelengths[i]) -minis[i])/(maxis[i]-minis[i])for i in range(8)]
-    #print("minis ",minis)
-    #print("maxis ",maxis)
-    #print("avgs ",avgscore)
-    #for i in range(8):
-        #print([float(y[k][5]) if (int(y[k][11]) == i) else 1 for k in range(len(y))])
+    print("pro mins",[kk[0] for kk in min_max])
+    print("pro maxs",[kk[1] for kk in min_max])
+    print("minis ",minis)
+    print("maxis ",maxis)
+    print("avgs ",avgscore)
+    for i in range(8):
+        print([float(y[k][5]) if (int(y[k][11]) == i) else 1 for k in range(len(y))])
 
 
     for i in range(len(y)):
-        for a in range(9):
+        for a in range(10):
             if (a != 7):
                 y[i][a] = clamp((float(y[i][a]) - min_max[a][0]) / (float(min_max[a][1]) - min_max[a][0]), 0, 1)
             else:
-                y[i][a] = float(y[i][a]) / float(maxis[gameId_order[float(y[i][11])]])
+                y[i][a] = float(y[i][a]) / float(gamelengths[gameId_order[float(y[i][11])]])
         y[i][9] = clamp((float(y[i][9]) - minis[gameId_order[int(y[i][11])]]) / (float(maxis[gameId_order[int(y[i][11])]]) -minis[gameId_order[int(y[i][11])]]), 0, 1)
     return y
 
 
 # save a dataset as a csv
 def copytocsv(y, name):
-    # #print(y[0])
+    # print(y[0])
 
     with open("ressources/"+name + ".csv", "w", newline="") as g:
         writer = csv.writer(g)
@@ -527,7 +528,7 @@ def copytocsv(y, name):
 
 # create the dataset from the patients inputs
 def createbasecloud():
-    #print("reading Patients data")
+    print("reading Patients data")
     u = []
     for roun in data:
         u += [roun['playerId']]
@@ -536,7 +537,7 @@ def createbasecloud():
     for h in u:
       #  if(int(h)!=55):
         j += 1
-        #print("Patient ", j)
+        print("Patient ", j)
         for i in range(8):
             durations[i] = 0
         for i in range(8):
@@ -617,16 +618,16 @@ def selectvalid(use):
         if(typediff==3):
             return[lastdiffs[2]+10 ,lastdiffs[2]+20]
         if(typediff==0):
-            return[lastdiffs[2]-20,lastdiffs[2]+5]
+            return[lastdiffs[2]-20,lastdiffs[2]]
         if(typediff==1):
             return [lastdiffs[0]-10,lastdiffs[2]]
 
-        return [lastdiffs[2]-5,lastdiffs[3]+10]
+        return [lastdiffs[2]-5,lastdiffs[2]+10]
     return [0,player_max_level_index]
 # Core Function, sklearn library doesn't allow for a customisable distance function, a basic implementation is down
 # the fucntion returns the k closest neighbours in the dataset
 def knn(x, gameId, k=1, wei=[],use = True):
-    #print("weight for score ", mean(weights[gameId_order[gameId]])/5.0)
+    print("weight for score ", mean(weights[gameId_order[gameId]])/5.0)
     wei = [0, 0, 0, 0, mean(weights[gameId_order[gameId]])/5.0]
 
     dist = []
@@ -644,7 +645,7 @@ def knn(x, gameId, k=1, wei=[],use = True):
 
 
         if z['GameId'] == gameId and distance(z[0:10], x[0:10], we) > 1e-9 and selectvalid(use)[0]<z['difficulty']<selectvalid(use)[1]:
-            # #print(typediff,oldtype,z['difficulty'],lastdiff)
+            # print(typediff,oldtype,z['difficulty'],lastdiff)
             dist += [distance(z[0:10], x[0:10], we)]
             #scores += [z['Score']]
             #diffs += [z['difficulty']]
@@ -654,9 +655,9 @@ def knn(x, gameId, k=1, wei=[],use = True):
             vect += [z]
     #coupled = sorted(zip(dist, vect, diffs, scores, adv,playerids,pros), key=lambda s: s[0])
     coupled = sorted(zip(dist, vect), key=lambda s: s[0])
-    ##print("distances")
-    ##print(sorted(dist)[0:k])
-    ##print([[c[2],c[6], c[3], c[4],c[5]] for c in coupled[0:k]])
+    #print("distances")
+    #print(sorted(dist)[0:k])
+    #print([[c[2],c[6], c[3], c[4],c[5]] for c in coupled[0:k]])
     return coupled[0:k]
 
 
@@ -667,9 +668,9 @@ k = 8
 # average of k closest neighbours
 
 def next(profile, difficulty, gameId, error,use=True):
-    ##print("k = ", k)
+    #print("k = ", k)
     u = knn(profile + [difficulty + alpha * error], gameId, k,use)
-    print("Found ",len(u), "Neighbours")
+
     par = [0] * len(u[0][1][12:24])
     s = sum([1 / (h[0]) for h in u])
     for lev in u:
@@ -692,12 +693,12 @@ def SMOTE(SyntSamples=15000):
     maxis= [0]*8
     minis = [1000]*8
     avgscore=[0]*8
-    pdf = pd.read_csv('ressources/Patients.csv')
-    # rread = readaslist("Unnormalized")
-    rread = readaslist("Patients")
+    pdf = pd.read_csv('ressources/Unnormalized.csv')
+    rread = readaslist("ressources/Unnormalized")
+    #rread = readaslist("Patients")
 
-    print("Creating Additional Synthetic data")
-    print("Starting Smote")
+    #print("Creating Additional Synthetic data")
+   # print("Starting Smote")
     if(SyntSamples==0 and os.path.exists('NSynthetic.csv')):
         rread = readaslist('Synthetic')
         copytocsv(rread, "Synthetic")
@@ -706,32 +707,31 @@ def SMOTE(SyntSamples=15000):
     for j in range(SyntSamples):
         print("Generating ", j)
         a = np.random.randint(low=0, high=len(rread))
-        #print(a)
+        print(a)
         gameId = int(rread[a][11])
         u = knn([float(x) for x in rread[a][0:10]], gameId, K_smote,[],False)
         n = np.random.randint(0, K_smote)
         s = float(np.random.randint(0, 1000)) / 1000.0
         chosen = tolisting(u[n][1])
-        #print("the chosen ",chosen)
+        print("the chosen ",chosen)
         new = [s * (chosen[i] - float(rread[a][i])) + float(rread[a][i]) for i in range(10)]
         new += [np.random.randint(100, 200)]
-
         new += [int(chosen[11])]
         new += [s * (chosen[i] - float(rread[a][i])) + float(rread[a][i]) for i in range(12, 24)]
         new += chosen[24:25]
         new += [s * (chosen[25] - float(rread[a][25])) + float(rread[a][25])]
         new[20] = round(new[20])
         new[21] = round(new[21])
-        #print("new guy ",new)
+        print("new guy ",new)
         rread += [new]
     copytocsv(rread, "Synthetic")
     copytocsv(normalizing(rread), "NSynthetic")
 
 
-SMOTE(5000)
+SMOTE(15000)
 
 
-# #print(next([0.819009, 0.822712, 0.875080,
+# print(next([0.819009, 0.822712, 0.875080,
 #             0.814470,
 #             0.875080,
 #             0.437959,
@@ -740,18 +740,18 @@ SMOTE(5000)
 
 # simulate a gameplay_test
 
-
+print([unnormalized[u].max() for u in dataframenames[0:9]])
+print([unnormalized[u].min() for u in dataframenames[0:9]])
 def play_test():
     global pdf
     global lastdiff
     global oldtype
     global lastdiffs
     global typediff
-    pdf = pd.read_csv('ressources/NSynthetic.csv')
+    pdf = pd.read_csv('ressources/Synthetic.csv')
     print("Virtual Player Testing .. ")
     gameId = 15
     for gameId in order:
-        print("Game",  gameNames[gameId_order[gameId]])
         lastdiff = 0
         oldtype = 0
         typediff = 2
@@ -774,7 +774,7 @@ def play_test():
             for i in range(8):
                 durations[i] = 0
                 advancements[i] = 0
-            for i in range(300):
+            for i in range(200):
                 print("level ", i)
                 oldtype = typediff
                 difficulty = difficultycurve2(levels,gameId)
@@ -784,7 +784,8 @@ def play_test():
 
                 s = tester(difficulty, n)
                 n += 1
-                print("I suggest ",[str(a) + " : " + str(b) if isinstance(b, str) or b >= 0 else "" for a, b in
+                print("I suggest ")
+                print([str(a) + " : " + str(b) if isinstance(b, str) or b >= 0 else "" for a, b in
                        zip(dataframenames[12:], nexty)])
                 score = s[0]
                 difficulties.append(difficulty)
@@ -792,31 +793,33 @@ def play_test():
                 diffs.append(nexty[0] / 140.0)
                 lastdiff = nexty[0]
                 lastdiffs[typediff]=(lastdiffs[typediff]+3*nexty[0])/4.0
-                #print(lastdiffs)
-                # #print("you scored ",score)
+                print(lastdiffs)
+                # print("you scored ",score)
                 # addtocloud(nexty[0], test_player[0], score, test_player_id, gameId, nexty[-1], nexty[-2])
-                advancements[gameId_order[gameId]] += 1
+
                 durations[gameId_order[gameId]] += nexty[-1]
                 test_player[0][5] = durations[gameId_order[gameId]]
                 test_player[0][6] = sum(durations)
                 test_player[0][7] = advancements[gameId_order[gameId]]
                 test_player[0][8] = sum(advancements)
+                advancements[gameId_order[gameId]] += 1
                 levels += 1
+
                 if (len(test_player[1]) < 1):
-                    test_player[1] = [[[s[1], s[0], gameId]]]
+                    test_player[1] = [[[s[1], s[0], gameId,lastdiff]]]
                 else:
                     if (compareday(test_player[1][-1][0][0], s[1])):
-                        test_player[1][-1] += [[s[1], s[0], gameId]]
+                        test_player[1][-1] += [[s[1], s[0], gameId,lastdiff]]
                     else:
-                        test_player[1].append([[s[1], s[0], gameId]])
+                        test_player[1].append([[s[1], s[0], gameId,lastdiff]])
 
                 error = (levels * error + difficulty - score) / (levels + 1)
-                # #print("err ",error)
+                # print("err ",error)
                 test_player = updateprofile(gameId, test_player)
                 for a, u in zip(range(9), dataframenames[0:9]):
                     test_player[0][a] = clamp(
                         (test_player[0][a] - unnormalized[u].min()) / (unnormalized[u].max() - unnormalized[u].min()), 0, 1)
-                #print("new profile : ", test_player[0])
+                print("new profile : ", test_player[0])
             plt.figure("Score Curve",figsize=(8,6))
             #plt.plot(scores)
             #plt.plot(difficulties)
@@ -826,12 +829,13 @@ def play_test():
             plt.show()
             # plt.close()
             #plt.figure("LevelIndex")
-            x=plt.figure("Game",figsize=(20,12))
+            plt.figure("Game",figsize=(20,12))
             plt.plot(scores)
             plt.plot(difficulties)
             plt.plot(diffs)
-            plt.savefig("ressources/Game " + gameNames[gameId_order[gameId]]+ ".jpg")
+            plt.savefig(r"ressources/Game " + gameNames[gameId_order[gameId]]+ ".png")
             plt.close()
 
 
 play_test()
+
