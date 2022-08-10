@@ -425,7 +425,6 @@ def score_chunk(round):
     return score
 
 
-f.close()
 
 
 # bell shaped function used for calculating scores
