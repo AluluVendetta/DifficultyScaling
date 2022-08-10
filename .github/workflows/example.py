@@ -24,8 +24,6 @@ def readpatientsdata():
             with open(fname) as infile:
                 outfile.write(infile.read())
 
-readpatientsdata()
-
 alpha = 0.5
 
 # Open the googleSheet that specifies difficulty of each sequence
