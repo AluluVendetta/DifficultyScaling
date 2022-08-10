@@ -712,7 +712,7 @@ def SMOTE(SyntSamples=15000):
         chosen = tolisting(u[n][1])
         print("the chosen ",chosen)
         new = [s * (chosen[i] - float(rread[a][i])) + float(rread[a][i]) for i in range(10)]
-        new += [np.random.randint(100, 200)]
+        new += [100+j]
         new += [int(chosen[11])]
         new += [s * (chosen[i] - float(rread[a][i])) + float(rread[a][i]) for i in range(12, 24)]
         new += chosen[24:25]
